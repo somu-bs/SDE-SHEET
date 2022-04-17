@@ -1,52 +1,100 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-int nextGap(int gap) {
-	if(gap <= 1) return 0;
-
-	return (gap/2) + (gap%2); // ceil(gap/2)
+// Optimized : Gap method
+// TC - O(logN)
+// SC - O(1)
+void merge3(int ar1[], int ar2[], int n, int m) {
+    int gap = ceil((float)(n+m)/2);
+    while(gap > 0) {
+        int i = 0;
+        int j = gap;
+        while(j < (n+m)) {
+            if(j < n && ar1[i] > ar1[j]) {
+                swap(ar1[i], ar1[j]);
+            }
+            else if(j >= n && i < n && ar1[i] > ar2[j-n]) {
+                swap(ar1[i], ar2[j-n]);
+            }
+            else if(j >= n && i >= n && ar2[i-n] > ar2[j-n]) {
+                swap(ar2[i-n], ar2[j-n]);
+            }
+            j++;
+            i++;
+        }
+        if(gap == 1) gap = 0;
+        else gap = ceil((float) gap / 2);
+    }
 }
 
-void merge(int* arr1, int* arr2, int n, int m) {
-	int i, j, gap = n+m;
-	for(gap = nextGap(gap);gap>0;gap=nextGap(gap)) {
-		for(i = 0;i+gap<n;i++) {
-			if(arr1[i] > arr1[i+gap]) {
-				swap(arr1[i], arr1[i+gap]);
-			}
-		}
+// Without extra space
+// TC - O(N*M)
+// SC - O(1)
+void merge2(int ar1[], int ar2[], int n, int m) {
+    int k;
+    for(int i = 0;i<n;i++) {
+        if(ar1[i] > ar2[0]) {
+            int temp = ar1[i];
+            ar1[i] = ar2[0];
+            ar2[0] = temp;
+        }
 
-		for(int j = gap>n ? gap-n : 0;i<n && j<m;i++,j++) {
-			if(arr1[i] > arr2[j]) {
-				swap(arr1[i], arr2[j]);
-			}
-		}
+        int first = ar2[0];
+        for(k = 1;k<m && ar2[k] < first;k++) {
+            ar2[k-1] = ar2[k];
+        }
+        ar2[k-1] = first;
+    }
+}
 
-		if(j < m) {
-			for(j = 0;j+gap<m;j++) {
-				if(arr2[j] > arr2[j+gap]) {
-					swap(arr2[j], arr2[j+gap]);
-				}
-			}
-		}
-	}
+
+// Brute force
+// TC - O(NlogN) + O(N) + O(N)
+// SC - O(N+M)
+void merge(int ar1[], int ar2[], int n, int m) {
+    int ar3[n+m];
+    int k = 0;
+
+    for(int i = 0;i<n;i++) {
+        ar3[k++] = ar1[i];
+    }
+
+    for(int i = 0;i<m;i++) {
+        ar3[k++] = ar2[i];
+    }
+
+    sort(ar3, ar3+n+m);
+    k = 0;
+
+    for(int i = 0;i<n;i++) {
+        ar1[i] = ar3[k++];
+    }
+
+    for(int i = 0;i<m;i++) {
+        ar2[i] = ar3[k++];
+    }
 }
 
 int main() {
-	int arr1[] = {1,4,7,8,10};
-	int arr2[] = {2,3,9};
+    int arr1[] = {1,4,7,8,10};
+    int arr2[] = {2,3,9};
+    cout<<"Before merge:"<<endl;
+    for (int i = 0; i < 5; i++) {
+      cout<<arr1[i]<<" ";
+    }
+    cout<<endl;
+    for (int i = 0; i < 3; i++) {
+      cout<<arr2[i]<<" ";
+    }
+    cout<<endl;
+    merge3(arr1, arr2, 5, 3);
+    cout<<"After merge:"<<endl;
+    for (int i = 0; i <5; i++) {
+      cout<<arr1[i]<<" ";
+    }
+    cout<<endl;
+    for (int i = 0; i < 3; i++) {
+      cout<<arr2[i]<<" ";
+    }
 
-	int n = sizeof(arr1) / sizeof(arr1[0]);
-	int m = sizeof(arr2) / sizeof(arr2[0]);
-
-	merge(arr1, arr2, n, m);
-
-	for(int i = 0;i<n;i++) {
-		cout << arr1[i];
-	}
-
-	for(int i = 0;i<m;j++) {
-		cout << arr2[i];
-	}
-	return 0;
 }
